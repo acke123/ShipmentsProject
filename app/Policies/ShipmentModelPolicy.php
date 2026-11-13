@@ -22,7 +22,7 @@ class ShipmentModelPolicy
      */
     public function view(User $user, ShipmentModel $shipmentModel): bool
     {
-        return false;
+        return $user->role === User::ROLE_ADMIN || $shipmentModel->client_id === $user->id;
     }
 
     /**
@@ -66,6 +66,11 @@ class ShipmentModelPolicy
     }
 
     public function canViewCreationPage(User $user): bool
+    {
+        return $user->role == User::ROLE_ADMIN;
+    }
+
+    public function canViewEdit(User $user)
     {
         return $user->role == User::ROLE_ADMIN;
     }

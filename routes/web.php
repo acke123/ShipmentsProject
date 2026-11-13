@@ -11,6 +11,8 @@ Route::get('/', function () {
 Route::resource('shipments', ShipmentController::class)
     ->parameter('shipments', 'shipment');
 
+Route::post('/shipments/{shipment}/assignedUser',[ShipmentController::class, 'assignedUser'])->name('shipments.assignedUser');
+
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');

@@ -8,6 +8,7 @@ use App\Models\ShipmentDocumentsModel;
 use App\Models\ShipmentModel;
 use App\Models\User;
 use App\Traits\ImageUploadTrait;
+use http\Env\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
@@ -21,8 +22,8 @@ class ShipmentController extends Controller
      */
     public function index()
     {
-        $shipments = Cache::remember('shipments', 60,
-            fn() => ShipmentModel::where(['status' => ShipmentModel::STATUS_UNASSIGNED])->get());
+        $shipments = Cache::remember('shipments', 10,
+            fn() => ShipmentModel::UnassignedShipments()->get());
         return view('shipments.index', ['shipments' => $shipments]);
     }
 
@@ -68,7 +69,7 @@ class ShipmentController extends Controller
 
                 ShipmentDocumentsModel::create([
                     'shipment_id' => $shipment->id,
-                    'document_name' => $filename,
+                    'document_name' => $path,
                 ]);
             }
         }
@@ -80,6 +81,7 @@ class ShipmentController extends Controller
      */
     public function show(ShipmentModel $shipment)
     {
+        Gate::authorize('view', $shipment);
         return view('shipments.show', ['shipment' => $shipment]);
     }
 
@@ -88,6 +90,7 @@ class ShipmentController extends Controller
      */
     public function edit(ShipmentModel $shipment)
     {
+        Gate::authorize('canViewEdit', ShipmentModel::class);
         return view('shipments.edit', ['shipment' => $shipment]);
     }
 
@@ -106,5 +109,18 @@ class ShipmentController extends Controller
     public function destroy(ShipmentModel $shipmentsModel)
     {
         //
+    }
+
+    public function assignedUser(\Illuminate\Http\Request $request, ShipmentModel $shipment)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+        ]);
+
+        $shipment->user_id = $request->user_id;
+        $shipment->status = ShipmentModel::STATUS_IN_PROGRESS;
+        $shipment->save();
+
+        return redirect()->back();
     }
 }

@@ -34,9 +34,20 @@
 </span>
                         </div>
 
-                        <div class="small text-muted mb-2">
+                        <div class="small text-muted mb-1 mt-2">
                             <a class="btn btn-info" href="{{route('shipments.show', ['shipment' => $shipment->id])}}">View shipment</a>
                         </div>
+
+                        <form method="POST" action="{{route('shipments.assignedUser', ['shipment' => $shipment->id])}}">
+                            @csrf
+                            <select name="user_id">
+                                <option value="0" selected disabled>None</option>
+                                @foreach(\App\Models\User::all() as $user)
+                                    <option value="{{$user->id}}">{{$user->name}}</option>
+                                @endforeach
+                            </select>
+                            <button>Assigned user</button>
+                        </form>
                     </div>
                 </div>
             </div>

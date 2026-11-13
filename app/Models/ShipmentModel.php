@@ -26,14 +26,6 @@ class ShipmentModel extends Model
         'to_city', 'to_country', 'price',
         'status', 'user_id', 'details', 'client_id'];
 
-    public static function booted()
-    {
-        static::created(function ($shipment) {
-            if ($shipment->status == self::STATUS_UNASSIGNED) {
-                Cache::forget('shipments');
-            }
-        });
-    }
     public function setStatusAttribute($status)
     {
         if (!in_array($status, self::ALLOWED_STATUSES)) {
@@ -45,5 +37,10 @@ class ShipmentModel extends Model
     public function getDocuments()
     {
         return $this->hasMany(ShipmentDocumentsModel::class, 'shipment_id', 'id');
+    }
+
+    public function scopeUnassignedShipments($query)
+    {
+        return $query->where('status', self::STATUS_UNASSIGNED);
     }
 }
